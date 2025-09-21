@@ -15,6 +15,7 @@ import java.util.List;
 public class Client {
     static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0";
     static final String URL="https://www.shireyishunjian.com/";
+    static final String VERIFY_JSON="""{"form_id":1,"answer":["1","1","1;2","1","1","00000000"]}""";
     final Logger logger= LoggerFactory.getLogger(Client.class);
     OkHttpClient client;
     CookieJar cookieJar=new MemoryCookieJar();
@@ -88,6 +89,23 @@ public class Client {
         return input.attr("value");
     }
 
+    public void verify()throws IOException{
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(VERIFY_JSON, JSON);
+        Request request = new Request.Builder()
+            .url("https://www.shireyishunjian.com/api/submit")
+            .header("User-Agent",User_Agent)
+            .post(body)
+            .build();
+
+        try (Response response=client.newCall(request).execute()){
+           if (response.code()!=200){
+               throw new IOException("UnExpect status code");
+           } 
+        }
+        logger.info("Verify Successfully");
+    }
+    
     public String getBody(String url)throws IOException{
         long start=System.currentTimeMillis();
 
