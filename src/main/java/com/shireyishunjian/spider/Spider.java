@@ -1,4 +1,4 @@
-package com.shireyishunjian.main;
+package com.shireyishunjian.spider;
 
 import com.shireyishunjian.config.Config;
 import com.shireyishunjian.html.ArticleResolver;
@@ -25,14 +25,13 @@ public class Spider implements AutoCloseable{
 
     Client client;
     Config config;
-    BlockingQueue<Long> queue=new LinkedBlockingQueue<>();
+    BlockingQueue<Long> queue;
     OutputStream output;
     boolean closed=false;
     boolean loadedAll =false;
     File outDir;
     FailPolicy failPolicy;
     LongAdder fail=new LongAdder();
-    final Object lock=new Object();
 
     public enum FailPolicy{
         EXIT_ON_FAIL,
@@ -42,22 +41,27 @@ public class Spider implements AutoCloseable{
         RETRY_ON_FAIL_FAIL3_EXIT
     }
 
-    public Spider(Client client, Config config,FailPolicy policy){
+
+    public Spider(Client client, Config config, FailPolicy policy,BlockingQueue<Long> queue){
         this.client = client;
         this.config = config;
         this.failPolicy=policy;
+        this.queue=queue;
 
         outDir= new File(config.getOutput());
         outDir.mkdirs();
     }
 
-    public void sync()throws IOException{
-        if (output==null)output=new FileOutputStream(config.getSync_file());
-        DataOutputStream dataOut=new DataOutputStream(output);
-        for (Long num:queue){
-            dataOut.writeLong(num);
+    public void sync(){
+        try (var output=new FileOutputStream(config.getSync_file());
+        DataOutputStream dataOut=new DataOutputStream(output)){
+            for (Long num:queue){
+                dataOut.writeLong(num);
+            }
+            logger.info("Sync complete");
+        } catch (IOException e) {
+            logger.error("Failed sync",e);
         }
-        logger.info("Sync complete");
     }
 
     @Override
@@ -83,10 +87,12 @@ public class Spider implements AutoCloseable{
                 list=PostListResolver.resolvePostList(page);
                 total+=list.size();
                 queue.addAll(list);
+                synchronized (this) {
+                    notifyAll();
+                }
                 logger.info("Loaded page {}",i);
             }
             logger.info("Successfully load {} link in {} pages",total,i);
-            sync();
         } catch (IOException e) {
             logger.error("Failed to load pages",e);
         } finally {
@@ -100,12 +106,15 @@ public class Spider implements AutoCloseable{
         return ()->{
             while (!closed){
                 Long temp=queue.poll();
-                if (temp==null) {
-                    try {
-                        lock.wait();
-                        continue;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+
+                synchronized (this) {
+                    if (temp == null) {
+                        try {
+                            wait();
+                            continue;
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
