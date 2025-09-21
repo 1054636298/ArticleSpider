@@ -1,7 +1,7 @@
 {
-  "fid": 7,
+  "fid": 302,
   "resolve": ["172.64.229.181"],
   "sync_file": "DAT",
-  "max_thread": 4,
-  "output": "./output"
+  "max_thread": 20,
+  "output": "U://output/fid/302/tid"
 }

@@ -19,7 +19,7 @@ class Main{
         Config config=new ObjectMapper().readValue(new File("config.json"),Config.class);
         Client client=new Client(config.getResolve());
         client.register();
-
+        client.verify();
 
         boolean loadFromFile=false;
         BlockingQueue<Long> queue=new LinkedBlockingQueue<>();
@@ -55,5 +55,6 @@ class Main{
                 });
             }
         }
+        System.exit(0);
     }
 }

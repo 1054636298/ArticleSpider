@@ -55,6 +55,11 @@ public class Spider implements AutoCloseable{
     public void sync(){
         try (var output=new FileOutputStream(config.getSync_file());
         DataOutputStream dataOut=new DataOutputStream(output)){
+            synchronized (this){
+                if (!queue.isEmpty()){
+                    notifyAll();
+                }
+            }
             for (Long num:queue){
                 dataOut.writeLong(num);
             }

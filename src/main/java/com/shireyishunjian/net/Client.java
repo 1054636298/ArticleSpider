@@ -15,7 +15,8 @@ import java.util.List;
 public class Client {
     static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0";
     static final String URL="https://www.shireyishunjian.com/";
-    static final String VERIFY_JSON="""{"form_id":1,"answer":["1","1","1;2","1","1","00000000"]}""";
+    static final String VERIFY_JSON= """
+            {"form_id":1,"answer":["1","1","1;2","1","1","00000000"]}""";
     final Logger logger= LoggerFactory.getLogger(Client.class);
     OkHttpClient client;
     CookieJar cookieJar=new MemoryCookieJar();
