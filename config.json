@@ -1,0 +1,7 @@
+{
+  "fid": 7,
+  "resolve": ["172.64.229.181"],
+  "sync_file": "DAT",
+  "max_thread": 4,
+  "output": "./output"
+}
