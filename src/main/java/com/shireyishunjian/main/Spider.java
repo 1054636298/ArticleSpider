@@ -14,9 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
@@ -58,6 +57,7 @@ public class Spider implements AutoCloseable{
         for (Long num:queue){
             dataOut.writeLong(num);
         }
+        logger.info("Sync complete");
     }
 
     @Override
@@ -83,9 +83,10 @@ public class Spider implements AutoCloseable{
                 list=PostListResolver.resolvePostList(page);
                 total+=list.size();
                 queue.addAll(list);
-                logger.debug("Loaded page {}",i);
+                logger.info("Loaded page {}",i);
             }
             logger.info("Successfully load {} link in {} pages",total,i);
+            sync();
         } catch (IOException e) {
             logger.error("Failed to load pages",e);
         } finally {
@@ -98,17 +99,17 @@ public class Spider implements AutoCloseable{
     public Runnable getTask(){
         return ()->{
             while (!closed){
-                long tid;
-                synchronized (lock){
-                    if (loadedAll &&queue.isEmpty()) break;
-
+                Long temp=queue.poll();
+                if (temp==null) {
                     try {
-                        tid = queue.take();
+                        lock.wait();
+                        continue;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
 
+                long tid=temp;
 
                 try {
                     handleArticle(tid);
@@ -144,7 +145,7 @@ public class Spider implements AutoCloseable{
         };
     }
     public void handleArticle(long tid)throws IOException{
-        logger.debug("Handle article {}",tid);
+        logger.trace("Handle article {}",tid);
         Document document= Jsoup.parse("<html><head></head><body></body></html>");
         int i=1;
 
@@ -161,10 +162,30 @@ public class Spider implements AutoCloseable{
         document.body().appendChild(main);
 
         try {
-            File file=new File(outDir,tid+".html");
-            Files.writeString(file.toPath(),document.html(), StandardCharsets.UTF_8);
+            writeFile(tid,document);
         } catch (IOException e) {
             logger.error("Failed writing disk",e);
         }
+    }
+
+    private void writeFile(long tid,Document doc) throws IOException{
+        String name=String.format("%09d",tid);
+        String[] names=splitString(name,3);
+        File dir=new File(outDir,names[0]+"/"+names[1]);
+        dir.mkdirs();
+
+        File file=new File(dir,names[2]+".html");
+        Files.writeString(file.toPath(),doc.html(),StandardCharsets.UTF_8);
+    }
+
+    public static String[] splitString(String str, int partLength) {
+        List<String> result = new ArrayList<>();
+        int currSize = str.length();        //循环遍历
+        for (int i = 0; i < currSize; i += partLength) {// 截取字符串，确保不超出原字符串的长度
+            String part = str.substring(i, Math.min(currSize, i + partLength));//将分割的字符串添加到result中
+            result.add(part);
+        }
+        //返回分割后的字符串集合
+        return result.toArray(new String[0]);
     }
 }

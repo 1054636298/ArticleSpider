@@ -4,14 +4,18 @@ import okhttp3.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
+@SuppressWarnings("SpellCheckingInspection")
 public class Client {
     static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0";
     static final String URL="https://www.shireyishunjian.com/";
+    final Logger logger= LoggerFactory.getLogger(Client.class);
     OkHttpClient client;
     CookieJar cookieJar=new MemoryCookieJar();
 
@@ -55,8 +59,8 @@ public class Client {
 
         try (Response response=client.newCall(request).execute()){
             if (response.body()==null)throw new RuntimeException();
-
         }
+        logger.info("Register successfully name:{},password:{}",name,password);
     }
 
     public void register()throws IOException{
@@ -70,17 +74,23 @@ public class Client {
         if (table == null)throw new RuntimeException();
         Element input = table.select("input[name='formhash']").first();
         if (input==null)throw new RuntimeException();
+
+        logger.debug("Sucessfully getting formhash {}",input.attr("value"));
         return input.attr("value");
     }
 
     public String getAgreeBbrul()throws IOException{
         Document document= Jsoup.parse(getBody("main/member.php?mod=register"));
         Element span=document.select("#reginfo_a_btn").first();
+        if (span==null)throw new RuntimeException("#reginfo_a_btn not found");
         Element input=span.select("input[name='agreebbrule']").first();
+        if (input==null)throw new RuntimeException("input[name='agreebbrule'] not found");
         return input.attr("value");
     }
 
     public String getBody(String url)throws IOException{
+        long start=System.currentTimeMillis();
+
         Request request=new Request.Builder()
                 .get()
                 .header("User-Agent",User_Agent)
@@ -93,7 +103,9 @@ public class Client {
            } else if (response.body()==null){
                throw new IOException("Empty body");
            }
-           return response.body().string();
+           String body =response.body().string();
+           logger.trace("Successfully send resquest in {} ms,url: {}",System.currentTimeMillis()-start,request.url());
+           return body;
        }
     }
 
