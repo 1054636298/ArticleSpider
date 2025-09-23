@@ -15,7 +15,7 @@ import java.util.List;
 public class Client {
     static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0";
     static final String URL="https://www.shireyishunjian.com/";
-    static final String VERIFY_JSON= """
+    static final String Upgrade_JSON= """
             {"form_id":1,"answer":["1","1","1;2","1","1","00000000"]}""";
     final Logger logger= LoggerFactory.getLogger(Client.class);
     OkHttpClient client;
@@ -37,6 +37,7 @@ public class Client {
     }
 
     public void register(String name,String password)throws IOException{
+        String email=StringUtils.getRandomEmail();
         String hash=getFormHash();
         String agree=getAgreeBbrul();
         MultipartBody.Builder form = new MultipartBody.Builder()
@@ -48,7 +49,7 @@ public class Client {
         form.addFormDataPart("shireuser",name);
         form.addFormDataPart("shirepass",password);
         form.addFormDataPart("shirepass2",password);
-        form.addFormDataPart("shiremail",StringUtils.getRandomEmail());
+        form.addFormDataPart("shiremail",email);
         form.addFormDataPart("field6","不确定");
         form.addFormDataPart("gender","0");
         form.addFormDataPart("agreebbrule",agree);
@@ -59,10 +60,11 @@ public class Client {
                 .url("https://www.shireyishunjian.com/main/member.php?mod=register&inajax=1")
                 .build();
 
+        long start=System.currentTimeMillis();
         try (Response response=client.newCall(request).execute()){
             if (response.body()==null)throw new RuntimeException();
         }
-        logger.info("Register successfully name:{},password:{}",name,password);
+        logger.info("Register successfully name:{},password:{},email:{} in {} ms",name,password,email,System.currentTimeMillis()-start);
     }
 
     public void register()throws IOException{
@@ -90,9 +92,10 @@ public class Client {
         return input.attr("value");
     }
 
-    public void verify()throws IOException{
+    public void upgrade()throws IOException{
+        long start=System.currentTimeMillis();
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
-        RequestBody body = RequestBody.create(VERIFY_JSON, JSON);
+        RequestBody body = RequestBody.create(Upgrade_JSON, JSON);
         Request request = new Request.Builder()
             .url("https://www.shireyishunjian.com/api/submit")
             .header("User-Agent",User_Agent)
@@ -104,7 +107,7 @@ public class Client {
                throw new IOException("UnExpect status code");
            } 
         }
-        logger.info("Verify Successfully");
+        logger.info("Upgrade Successfully in {} ms",System.currentTimeMillis()-start);
     }
     
     public String getBody(String url)throws IOException{

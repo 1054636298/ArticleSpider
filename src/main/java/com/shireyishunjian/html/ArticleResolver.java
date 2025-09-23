@@ -16,6 +16,7 @@ public class ArticleResolver {
         postList.select(".mtw.mbm.hm.cl").remove();
         postList.select(".pob.cl").remove();
         postList.select(".xl.xl2.o.cl").remove();
+        postList.select(".cl").removeAttr("style");
 
         return postList;
     }
@@ -34,6 +35,7 @@ public class ArticleResolver {
         postList.select(".mtw.mbm.hm.cl").remove();
         postList.select(".pob.cl").remove();
         postList.select(".xl.xl2.o.cl").remove();
+        postList.select(".cl").removeAttr("style");
 
         return postList.select("[id^='post_']");
     }

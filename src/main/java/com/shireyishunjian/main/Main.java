@@ -17,9 +17,12 @@ class Main{
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) throws Throwable{
         Config config=new ObjectMapper().readValue(new File("config.json"),Config.class);
+        logger.info("Starting with fid:{},thread:{},output:'{}',syncFile:'{}'",
+                config.getFid(),config.getMax_thread(),config.getOutput(),config.getSync_file());
+
         Client client=new Client(config.getResolve());
         client.register();
-        client.verify();
+        client.upgrade();
 
         boolean loadFromFile=false;
         BlockingQueue<Long> queue=new LinkedBlockingQueue<>();
