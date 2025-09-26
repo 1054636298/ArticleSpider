@@ -8,12 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class Client {
-    static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0";
+    static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
     static final String URL="https://www.shireyishunjian.com/";
     static final String Upgrade_JSON= """
             {"form_id":1,"answer":["1","1","1;2","1","1","00000000"]}""";
@@ -31,8 +30,6 @@ public class Client {
         client=new OkHttpClient().newBuilder()
                 .dns(dns)
                 .cookieJar(cookieJar)
-                .connectTimeout(Duration.ofSeconds(5))
-                .callTimeout(Duration.ofSeconds(6))
                 .build();
     }
 
@@ -126,7 +123,7 @@ public class Client {
                throw new IOException("Empty body");
            }
            String body =response.body().string();
-           logger.trace("Successfully send resquest in {} ms,url: {}",System.currentTimeMillis()-start,request.url());
+           logger.debug("Successfully send resquest in {} ms,url: {}",System.currentTimeMillis()-start,request.url());
            return body;
        }
     }

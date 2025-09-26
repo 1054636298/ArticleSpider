@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
 
 public class Spider implements AutoCloseable{
@@ -63,7 +62,7 @@ public class Spider implements AutoCloseable{
             for (Long num:queue){
                 dataOut.writeLong(num);
             }
-            logger.info("Sync complete");
+            logger.info("Sync complete with {} links",queue.size());
         } catch (IOException e) {
             logger.error("Failed sync",e);
         }
@@ -101,7 +100,7 @@ public class Spider implements AutoCloseable{
         } catch (IOException e) {
             logger.error("Failed to load pages",e);
         } finally {
-            loadedAll =true;
+            loadedAll=true;
         }
 
     }

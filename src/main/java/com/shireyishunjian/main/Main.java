@@ -53,7 +53,7 @@ class Main{
                 int finalI = i;
                 executor.submit(()->{
                     Thread.currentThread().setName("spider-"+ finalI);
-                    logger.debug("Thread {} started",finalI);
+                    logger.trace("Thread {} started",finalI);
                     spider.getTask().run();
                 });
             }

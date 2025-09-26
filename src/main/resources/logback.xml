@@ -32,7 +32,7 @@
     <root level="TRACE">
         <appender-ref ref="CONSOLE" />
     </root>
-    <logger name="file" level="INFO">
+    <logger name="file" level="TRACE">
         <appender-ref ref="FILE" />
     </logger>
     <!-- 自定义logger -->
