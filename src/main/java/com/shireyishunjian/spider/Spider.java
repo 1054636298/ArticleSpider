@@ -116,6 +116,7 @@ public class Spider implements AutoCloseable{
                     if (temp == null) {
                         try {
                             wait();
+                            if (loadedAll)break;
                             continue;
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
