@@ -168,6 +168,8 @@ public class Spider implements AutoCloseable{
 
         while (ArticleResolver.hasNext(page)){
             i++;
+            if (i>config.getMax_page())throw new RuntimeException("Too many pages");
+
             page=client.getArticle(tid,i);
             main.appendChildren(ArticleResolver.resolveReplies(page));
         }

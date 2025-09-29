@@ -4,6 +4,7 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class Config {
+    int max_page;
     int fid;
     List<String> resolve;
     String sync_file;
@@ -28,6 +29,14 @@ public class Config {
 
     public String getOutput() {
         return output;
+    }
+
+    public int getMax_page() {
+        return max_page;
+    }
+
+    public void setMax_page(int max_page) {
+        this.max_page = max_page;
     }
 
     public void setFid(int fid) {
