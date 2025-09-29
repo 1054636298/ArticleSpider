@@ -25,13 +25,13 @@ class Main{
         client.upgrade();
 
         boolean loadFromFile=false;
-        BlockingQueue<Long> queue=new LinkedBlockingQueue<>();
+        BlockingQueue<Integer> queue=new LinkedBlockingQueue<>();
         File dat=new File(config.getSync_file());
         if (dat.exists()&&dat.length()>0){
             try (FileInputStream fis=new FileInputStream(dat);
                  DataInputStream dis=new DataInputStream(fis)){
                 while(true){
-                    queue.add(dis.readLong());
+                    queue.add(dis.readInt());
                     loadFromFile=true;
                 }
             }catch (EOFException ignored){

@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostListResolver {
-    public static List<Long> resolvePostList(String content){
+    public static List<Integer> resolvePostList(String content){
         Document document= Jsoup.parse(content);
-        List<Long> postList=new ArrayList<>();
+        List<Integer> postList=new ArrayList<>();
         Elements elements = document.select("[id^='normalthread_']");
         for (Element post:elements){
             Element a=post.select(".s.xst").first();
@@ -20,7 +20,7 @@ public class PostListResolver {
             String[] str=url.split("&");
             for (String s:str){
                 if (s.startsWith("tid=")){
-                    postList.add(Long.valueOf(s.substring(4)));
+                    postList.add(Integer.valueOf(s.substring(4)));
                 }
             }
         }

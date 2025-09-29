@@ -5,6 +5,7 @@ import com.shireyishunjian.html.ArticleResolver;
 import com.shireyishunjian.html.HTMLUtils;
 import com.shireyishunjian.html.PostListResolver;
 import com.shireyishunjian.net.Client;
+import com.shireyishunjian.utils.IntStorage;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +25,7 @@ public class Spider implements AutoCloseable{
 
     Client client;
     Config config;
-    BlockingQueue<Long> queue;
+    BlockingQueue<Integer> queue;
     OutputStream output;
     boolean closed=false;
     boolean loadedAll =false;
@@ -41,7 +42,7 @@ public class Spider implements AutoCloseable{
     }
 
 
-    public Spider(Client client, Config config, FailPolicy policy,BlockingQueue<Long> queue){
+    public Spider(Client client, Config config, FailPolicy policy,BlockingQueue<Integer> queue){
         this.client = client;
         this.config = config;
         this.failPolicy=policy;
@@ -59,8 +60,8 @@ public class Spider implements AutoCloseable{
                     notifyAll();
                 }
             }
-            for (Long num:queue){
-                dataOut.writeLong(num);
+            for (int num:queue){
+                dataOut.writeInt(num);
             }
             logger.info("Sync complete with {} links",queue.size());
         } catch (IOException e) {
@@ -81,7 +82,7 @@ public class Spider implements AutoCloseable{
         try {
             long i=1;
             String page=client.getArticleList(config.getFid(),i);
-            List<Long> list=PostListResolver.resolvePostList(page);
+            List<Integer> list=PostListResolver.resolvePostList(page);
             total+=list.size();
             queue.addAll(list);
             logger.info("Loaded page {}",i);
@@ -109,7 +110,7 @@ public class Spider implements AutoCloseable{
     public Runnable getTask(){
         return ()->{
             while (!closed){
-                Long temp=queue.poll();
+                Integer temp=queue.poll();
 
                 synchronized (this) {
                     if (temp == null) {
