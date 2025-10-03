@@ -50,7 +50,7 @@
                 </descriptorRefs>
                 <archive>
                     <manifest>
-                        <mainClass>Main</mainClass>
+                        <mainClass>com.shireyishunjian.main.Main</mainClass>
                     </manifest>
                 </archive>
             </configuration>
