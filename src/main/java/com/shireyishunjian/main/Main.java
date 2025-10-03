@@ -47,6 +47,8 @@ class Main{
              var executor= Executors.newThreadPerTaskExecutor(Thread.ofVirtual().factory())){
             if (!loadFromFile) {
                 Thread.ofPlatform().name("link-loader").start(spider::load);
+            }else {
+                spider.loadedAll();
             }
             syncTimer.run();
             for (int i = 0; i<Integer.parseInt(config.getMax_thread()); i++){

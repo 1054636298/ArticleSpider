@@ -27,8 +27,8 @@ public class Spider implements AutoCloseable{
     Config config;
     BlockingQueue<Integer> queue;
     OutputStream output;
-    boolean closed=false;
-    boolean loadedAll =false;
+    volatile boolean closed=false;
+    volatile boolean loadedAll =false;
     File outDir;
     FailPolicy failPolicy;
     LongAdder fail=new LongAdder();
@@ -49,7 +49,6 @@ public class Spider implements AutoCloseable{
         this.queue=queue;
 
         outDir= new File(config.getOutput());
-        outDir.mkdirs();
     }
 
     public void sync(){
@@ -75,6 +74,10 @@ public class Spider implements AutoCloseable{
         sync();
         if (output!=null)output.close();
         queue.clear();
+    }
+
+    public void loadedAll(){
+        loadedAll=true;
     }
 
     public void load(){
@@ -114,6 +117,7 @@ public class Spider implements AutoCloseable{
 
                 synchronized (this) {
                     if (temp == null) {
+                        if (loadedAll)break;
                         try {
                             wait();
                             if (loadedAll)break;
