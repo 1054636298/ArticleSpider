@@ -12,8 +12,8 @@ import java.util.List;
 
 @SuppressWarnings("SpellCheckingInspection")
 public class Client {
-    static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
-    static final String URL="https://www.shireyishunjian.com/";
+    public static final String User_Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
+    public static final String URL="https://www.shireyishunjian.com/";
     static final String Upgrade_JSON= """
             {"form_id":1,"answer":["1","1","1;2","1","1","00000000"]}""";
     final Logger logger= LoggerFactory.getLogger(Client.class);
@@ -31,6 +31,10 @@ public class Client {
                 .dns(dns)
                 .cookieJar(cookieJar)
                 .build();
+    }
+
+    public OkHttpClient getClient(){
+        return client;
     }
 
     public void register(String name,String password)throws IOException{

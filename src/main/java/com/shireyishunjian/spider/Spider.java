@@ -3,9 +3,13 @@ package com.shireyishunjian.spider;
 import com.shireyishunjian.config.Config;
 import com.shireyishunjian.html.ArticleResolver;
 import com.shireyishunjian.html.HTMLUtils;
+import com.shireyishunjian.html.ImgResolver;
 import com.shireyishunjian.html.PostListResolver;
 import com.shireyishunjian.net.Client;
-import com.shireyishunjian.utils.IntStorage;
+import okhttp3.Call;
+import okhttp3.HttpUrl;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URI;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -30,6 +36,7 @@ public class Spider implements AutoCloseable{
     volatile boolean closed=false;
     volatile boolean loadedAll =false;
     File outDir;
+    File imgDir;
     FailPolicy failPolicy;
     LongAdder fail=new LongAdder();
 
@@ -49,6 +56,7 @@ public class Spider implements AutoCloseable{
         this.queue=queue;
 
         outDir= new File(config.getOutput());
+        imgDir=config.isDownload_img()? new File(config.getImg_dir()) :null;
     }
 
     public void sync(){
@@ -179,6 +187,10 @@ public class Spider implements AutoCloseable{
             main.appendChildren(ArticleResolver.resolveReplies(page));
         }
 
+        if (imgDir!=null){
+            handleImg(main);
+        }
+
         HTMLUtils.addHead(document);
         document.body().appendChild(main);
 
@@ -186,6 +198,33 @@ public class Spider implements AutoCloseable{
             writeFile(tid,document);
         } catch (IOException e) {
             logger.error("Failed writing disk",e);
+        }
+    }
+
+
+    public void handleImg(Element element)throws IOException{
+        var imgURIs= ImgResolver.getImgList(element);
+        var httpClient=client.getClient();
+
+        for (String url : imgURIs) {
+            Request request=new Request.Builder()
+                    .url(url)
+                    .header("User-Agent", Client.User_Agent)
+                    .build();
+            try (Response response=httpClient.newCall(request).execute()){
+                if (response.code()!=200)throw new IOException("UnExpect status code");
+                writeImg(response.request().url().uri(),response);
+                logger.debug("Successfully download img {}",url);
+            }
+        }
+    }
+
+    private void writeImg(URI uri,Response response)throws IOException{
+        File imgFile=new File(imgDir,uri.getPath());
+        imgFile.getParentFile().mkdirs();
+        try (var in=response.body().byteStream();
+            var out=new FileOutputStream(imgFile)){
+            in.transferTo(out);
         }
     }
 
